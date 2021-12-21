@@ -138,7 +138,8 @@ int main (void)
 												// configuració
 	
 	Jugadors jugs;								// Vector de jugadors
-	
+	jugs.n = 0;
+
 	int index;									// Índex del nostre jugador en
 												// el Vector de Jugadors
 	
@@ -169,7 +170,7 @@ int main (void)
 	** del índex corresponent.
 	** Si no el troba, l'afegeix ordenadament (segons la puntuació, 0).
 	*/
-	if(!trobarJugador(nick, jugs, index))
+	while(!trobarJugador(nick, jugs, index) && execucio)
 		if(!inserirJugadorOrdenat(inicialitzarJugador(nick), jugs))
 		{
 			system("cls");
@@ -284,7 +285,7 @@ int main (void)
 			
 			default:
 				// JIBIRI JIBIRI
-				cout << "No ha seleccionant ninguna opció" << endl;
+				cout << "No ha seleccionant ninguna opció vàlida" << endl;
 				break;
 		}
 		cout << endl;
@@ -308,7 +309,6 @@ int jugar(const Configuracio & config, int & movs, ofstream & arxiu)
 	int fila = -1, columna = -1;		// Fila i columna on s'ha tirat la
 										// fitxa
 	int total;							// Nº total de tirades: f*c
-	int resultat = 0;					// Resultat (1 / -1 / 0)
 	
 	Matriu m;							// Tauler
 	inicialitzarMatriu(m);
@@ -637,7 +637,8 @@ int punts(const Matriu m, const Configuracio & config)
 			{
 				i = f + x;
 				j = y;
-				if(((m[i][j]==m[i][j+1] && m[i][j+1]==m[i][j+2]) && m[i][j+2]==m[i][j+3]) && m[i][j]=='X')
+				if(((m[i][j]==m[i][j+1] && m[i][j+1]==m[i][j+2])
+					&& m[i][j+2]==m[i][j+3]) && m[i][j]=='X')
 					return -5000;
 			}
 
@@ -646,27 +647,31 @@ int punts(const Matriu m, const Configuracio & config)
 			{
 				i = x;
 				j = c + y;
-				if(((m[i][j]==m[i+1][j] && m[i+1][j]==m[i+2][j]) && m[i+2][j]==m[i+3][j]) && m[i][j]=='X')
+				if(((m[i][j]==m[i+1][j] && m[i+1][j]==m[i+2][j])
+					&& m[i+2][j]==m[i+3][j]) && m[i][j]=='X')
 					return -5000;
 			}
 
 			// Mirar 4 en diag princ
 			i = x;
 			j = y;
-			if(((m[i][j]==m[i+1][j+1] && m[i+1][j+1]==m[i+2][j+2]) && m[i+2][j+2]==m[i+3][j+3]) && m[i][j]=='X')
+			if(((m[i][j]==m[i+1][j+1] && m[i+1][j+1]==m[i+2][j+2])
+				&& m[i+2][j+2]==m[i+3][j+3]) && m[i][j]=='X')
 				return -5000;
 
 			// Mirar 4 en diag inv
 			i = x;
 			j = y + 3;
-			if(((m[i][j]==m[i+1][j-1] && m[i+1][j-1]==m[i+2][j-2]) && m[i+2][j-2]==m[i+3][j-3]) && m[i][j]=='X')
+			if(((m[i][j]==m[i+1][j-1] && m[i+1][j-1]==m[i+2][j-2])
+				&& m[i+2][j-2]==m[i+3][j-3]) && m[i][j]=='X')
 				return -5000;
 		}
 
 	/**********************************************************
 	 * 		INTENTA FER 3 EN RATLLA (Amb possibilitat de 4, millor)
 	***********************************************************/
-	// Fer 3 en ratlla. El funcionament és el mateix que per a 4 en ratlla però dividint en quadrats 3x3
+	// Fer 3 en ratlla. El funcionament és el mateix que per a 4 en ratlla
+	//però dividint en quadrats 3x3
 	for(x = 0; x < config.files-2; x++)
 		for(y = 0; y < config.column-2; y++)
 		{
@@ -893,6 +898,7 @@ bool comprovar(const Matriu m, const Configuracio & config)
 			if(((m[i][j]==m[i+1][j-1] && m[i+1][j-1]==m[i+2][j-2]) && m[i+2][j-2]==m[i+3][j-3]) && m[i][j]!=' ')
 				return true;
 		}
+
 	return false;
 }
 
@@ -933,6 +939,7 @@ bool tirar_fitxa(Matriu m, const int c, int &f, char car, const Configuracio & c
 												// AL MOSTRAR LA MATRIU)
             f--;
         }
+
         return fitxa_colocada;
     }
 }
@@ -1005,6 +1012,7 @@ void inicialitzarMatriu(Matriu m)
 	for(i = 0; i < 10; i++)
 		for(j = 0; j < 10; j++)
 			m[i][j] = ' ';
+	
 	return;
 }
 
@@ -1019,6 +1027,7 @@ void copiarMatriu(const Matriu m, Matriu temp)
 	for(i = 0; i < 10; i++)
 		for(j = 0; j < 10; j++)
 			temp[i][j] = m[i][j];
+	
 	return;
 }
 
@@ -1064,17 +1073,26 @@ void canviarConfiguracio(string nick, Configuracio & config)
 {
 	ofstream f;
 	string fitxer;
+
+	char entrada;
 	
 	/* Canvia la configuració.
 	*/
-	do{
+	do {
 		cout << "\n\t~ Configuració del tauler (màx.: 10 x 10): ~" << endl;
+		cout << "\n\tPer defecte i recomanada 6x7 a nivell mitjà" << endl;
 		cout << endl;
+
     	cout << "Introdueix el nombre de files: ";
-    	cin >> config.files;
+    	cin >> entrada;
+		config.files = int(entrada) - 48;
+
     	cout << endl;
+
     	cout << "Introdueix el nombre de columnes: ";
-    	cin >> config.column;
+    	cin >> entrada;
+		config.column = int(entrada) - 48;
+
     	cout << endl;
     	
     	cout << "Introdueix el nivell de dificultat: " << endl;
@@ -1087,8 +1105,10 @@ void canviarConfiguracio(string nick, Configuracio & config)
     	cout << "\tNivell 2: Taulers de 7x7 fins a 10x10." << endl;
     	cout << "\tNivell 1: En cas de voler prioritzar la velocitat en la resposta." << endl;
     	cout << endl;
+
     	cout << "Nivell: ";
-    	cin >> config.dificultat;
+    	cin >> entrada;
+		config.dificultat = int(entrada) - 48;
 	}
 	while((config.files < 4 || config.column < 4) || (config.files > 10 || config.column > 10) || (config.dificultat < 1 || config.dificultat > 3));
 	
@@ -1462,11 +1482,16 @@ void actualitzarEstadistiques(Jugador & j, int res, int num_movs)
 
 	// Actualitza les estadístiques segons el resultat de la partida
     if (res == 1)
-        j.victories++;
+		j.victories++;
+	
     else if (res == 0)
-        j.empats++;
+		j.empats++;
+
     else if (res == -1)
-        j.derrotes++;
+		j.derrotes++;
+	
+	else
+		cout << "Resultat no vàlid" << endl;
 
 	// Assigna el nº de moviments de la última partida
 	j.u_p_movs = num_movs;
